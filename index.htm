@@ -1,0 +1,46 @@
+<html>
+	
+<head>
+<link href="favicon.ico" rel="shortcut icon" type="image/x-icon">
+<link href="favicon.ico" rel="icon"          type="image/x-icon">
+<link href="pgBase/iottbase.css" rel="stylesheet" type="text/css">
+<link href="pgBase/default.css" rel="stylesheet" type="text/css">
+	
+<script  type="text/javascript" src="pgBase/jquery-3.2.1.min.js"></script>  
+<script  type="text/javascript" src="pgBase/jquery-ui.min.js"></script>                       
+<script type="text/javascript" src="pgBase/pageloader.js"></script>
+<script type="text/javascript" src="pgBase/pagebuilder_1.js"></script>
+<script type="text/javascript" src="pgBase/pagebuilder_2.js"></script>
+<script type="text/javascript" src="pgBase/pagebuilder_3.js"></script>
+<script type="text/javascript" src="pgBase/pagebuilder_4.js"></script>
+<script type="text/javascript" src="pgBase/pagestitch.js"></script>
+<script type="text/javascript" src="pgBase/footer.js"></script>
+<script type="text/javascript" src="pgSrc/commandController.js"></script>
+	
+	
+<script type="text/javascript" src="pgSrc/SilverHat.js"></script>
+<script type="text/javascript" src="pgBase/gauge.min.js"></script>
+
+</head>
+
+<body>
+<div class="pagemain">
+	<div id="TabHolder" class="tabsectionbox"></div>
+
+	<div id="FooterHolder" class="footersectionbox">
+		<div class = "inputtext_float"> 
+			<p><a href="https://www.myiott.org" target="_blank"><img src="iottlogo.jpg" alt="myIoTT.org"></a></p>
+		</div>
+	</div>
+</div>
+
+<script>
+	var url = window.location.pathname;
+	var fileName = url.substring(url.lastIndexOf('/')+1);
+	constructPageContent(document.getElementById("TabHolder"));
+	constructFooterContent(document.getElementById("FooterHolder"));
+</script>
+
+</body>
+
+</html>
