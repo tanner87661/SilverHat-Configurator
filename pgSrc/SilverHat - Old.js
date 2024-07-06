@@ -97,7 +97,7 @@ function sendSVCommand(sv_cmd, sv_addr, data)
 			{
 //				sprintf(txMsg, "{\"Cmd\":\"SV\",\"Prm\":{\"Dst\":%i,\"Opc\":%i,\"Addr\":%i,\"Vals\":[%i,%i,%i,%i]}}\n", dst, sv_cmd, sv_addr, data[0], data[1], data[2], data[3]);
 				outMsg.Prm.Vals = [data[0], data[1], data[2], data[3]];
-				console.log(outMsg);
+//				console.log(outMsg);
 				writeToStream(JSON.stringify(outMsg));
 			}
 			break;
@@ -128,7 +128,6 @@ function sendSVCommand(sv_cmd, sv_addr, data)
 	
 			break;
 	}
-//	console.log(JSON.stringify(outMsg));
 }
 
 function downloadSettings(sender)
@@ -198,8 +197,7 @@ function createHWMainTab(parentObj)
 	dataTab = createEmptyDiv(hwMainTab, "div", "tile-1", "");
 	createDispText(dataTab, "tile-1_4", "Input Signal:", "", "RepInpSigHW");
 	dataTab = createEmptyDiv(hwMainTab, "div", "tile-1", "");
-//	hwTable = createDataTable(dataTab, "tile-1", ["Pos","PWR Pin","Analog Pin", "Sensor Rate", "AR Pin","Short Test", "Short Current [mA]"], "hwconfig", "");
-	hwTable = createDataTable(dataTab, "tile-1", ["Pos","PWR Pin","Analog Pin", "Sensor Rate", "AR Pin","Short Test", "Short Current [mA]", "1 ms", "50 ms", "90 ms", "140 ms"], "hwconfig", "");
+	hwTable = createDataTable(dataTab, "tile-1", ["Pos","PWR Pin","Analog Pin", "Sensor Rate", "AR Pin","Short Test", "Short Current [mA]"], "hwconfig", "");
 }
 
 function createConfigMainTab(parentObj)
@@ -207,7 +205,7 @@ function createConfigMainTab(parentObj)
 	var dataTab = createEmptyDiv(parentObj, "div", "tile-1", "");
 	createPageTitle(dataTab, "div", "tile-1", "BasicCfg_TitleMain", "h2", "Booster Device Configuration");
 	var dataTab = createEmptyDiv(parentObj, "div", "tile-1", "");
-	createDropdownselector(dataTab, "tile-1_4", "Valid Signal Format:", ["DCC"], "SigSel", "setSignalType(this)");
+	createDropdownselector(dataTab, "tile-1_4", "Valid Signal Format:", ["DCC","PWM"], "SigSel", "setSignalType(this)");
 	createDropdownselector(dataTab, "tile-1_4", "Power Up State:", ["Track Power OFF","Track Power ON"], "PwrUpState", "setPowerUpState(this)");
 	var dataTab = createEmptyDiv(parentObj, "div", "tile-1", "");
 	cbUseLN = createCheckbox(dataTab, "tile-1_4", "Use Command Communication", "UseLN", "setLoconetComm(this)");
@@ -230,8 +228,7 @@ function createConfigMainTab(parentObj)
 	createDispText(dataTab, "tile-1_4", "# of Booster Boards:", "0", "NumBooster");
 
 	BoosterTab = createEmptyDiv(parentObj, "div", "tile-1", "");
-//	BoosterTable = createDataTable(BoosterTab, "tile-1", ["Pos","Booster Module Settings", "Status", "Output Control"], "boosterconfig", "");
-	BoosterTable = createDataTable(BoosterTab, "tile-1", ["Pos","Booster Module Settings","",""], "boosterconfig", "");
+	BoosterTable = createDataTable(BoosterTab, "tile-1", ["Pos","Booster Module Settings", "Actuator Settings", "Reporting Settings"], "boosterconfig", "");
 
 	
 }
@@ -256,8 +253,7 @@ function createRuntimeMainTab(parentObj)
 	createPageTitle(dataTab, "div", "tile-1", "BasicCfg_TitleMain", "h2", "Booster Module Status and Control");
 
 	runtimeBoosterTab = createEmptyDiv(parentObj, "div", "tile-1", "");
-	runtimeBoosterTable = createDataTable(runtimeBoosterTab, "tile-1", ["Pos","Track Current","",""], "boosterstatus", "");
-//	runtimeBoosterTable = createDataTable(runtimeBoosterTab, "tile-1", ["Pos","Track Current", "Status", "Output Control"], "boosterstatus", "");
+	runtimeBoosterTable = createDataTable(runtimeBoosterTab, "tile-1", ["Pos","Track Current", "Status", "Output Control"], "boosterstatus", "");
 }
 
 function tfGauge(y, x, id, evtHandler)
@@ -777,7 +773,6 @@ function loadConfigBoosterTable(thisTable, thisData)
 	var th = document.getElementById(thisTable.id + "_head");
 	var tb = document.getElementById(thisTable.id + "_body");
 	var numCols = th.childNodes[0].children.length;
-//	createDataTableLines(thisTable, [tfPos, tfBoosterConfig], thisData.length, "setBoosterConfigData(this)");
 	createDataTableLines(thisTable, [tfPos, tfBoosterConfig, tfActuator, tfSensor], thisData.length, "setBoosterConfigData(this)");
 	for (var i=0; i<thisData.length;i++)
 	{
@@ -814,7 +809,6 @@ function loadConfigBoosterTable(thisTable, thisData)
 
 		updateActorDisplay(thisData[i].act[5], "bstShort", i, 3);
 		updateActorDisplay(thisData[i].act[6], "bstOverload", i, 3);
-
 	}
 }
 
@@ -824,7 +818,6 @@ function loadRuntimeBoosterTable(redrawTable, thisTable, thisData)
 	var tb = document.getElementById(thisTable.id + "_body");
 	var numCols = th.childNodes[0].children.length;
 	if (redrawTable)
-//		createDataTableLines(thisTable, [tfPos, tfBoosterRuntime], thisData.length, "setBoosterRuntimeData(this)");
 		createDataTableLines(thisTable, [tfPos, tfBoosterRuntime, tfBoosterStatus, tfBoosterControl], thisData.length, "setBoosterRuntimeData(this)");
 	for (var i=0; i<thisData.length;i++)
 	{
@@ -969,7 +962,7 @@ function setBoosterStatus (sender, newState)
 
 function setSignalType(sender)
 {
-	DeviceData.SigType = 0; //sender.selectedIndex;
+	DeviceData.SigType = sender.selectedIndex;
 	sendSVCommand(0x01, 0x04, [((DeviceData.SigType & 0x0F)<<4) + (DeviceData.PwrUpMode & 0x0F)]);
 }
 
@@ -1039,18 +1032,11 @@ function setHWConfig(sender)
 		case 5: //Short Button
 			{	
 				sendSVCommand(0x01, ((thisRow+1) << 8) + 0xF0, [0x00]);
-				setTimeout(triggerShortTest, 100, thisRow + 1);
-//				if (confirm("Bridge the rails and click OK to run short circuit test"))
-//					sendSVCommand(0x01, ((thisRow+1) << 8) + 0xF3, [0xFF]); //trigger short circuit test
+				if (confirm("Bridge the rails and click OK to run short circuit test"))
+					sendSVCommand(0x01, ((thisRow+1) << 8) + 0xF3, [0xFF]); //trigger short circuit test
 			}
 			break;
 	}
-}
-
-function triggerShortTest(rowNr)
-{
-	if (confirm("Bridge the rails and click OK to run short circuit test"))
-		sendSVCommand(0x01, (rowNr << 8) + 0xF3, [0xFF]); //trigger short circuit test
 }
 
 function setBoosterConfigData(sender)
@@ -1332,7 +1318,7 @@ function loadHWTable(thisTable, thisData, clrConf)
 	var tb = document.getElementById(thisTable.id + "_body");
 	var numCols = th.childNodes[0].children.length;
 
-	createDataTableLines(thisTable, [tfPos, tfNumeric, tfNumeric, tfNumeric, tfNumeric, tfBtnMeasure, tfText, tfText, tfText, tfText, tfText], thisData.Boosters.length, "setHWConfig(this)");	
+	createDataTableLines(thisTable, [tfPos, tfNumeric, tfNumeric, tfNumeric, tfNumeric, tfBtnMeasure, tfText], thisData.Boosters.length, "setHWConfig(this)");	
 
 	for (var i=0; i < thisData.Boosters.length;i++)
 	{
@@ -1346,18 +1332,6 @@ function loadHWTable(thisTable, thisData, clrConf)
 		e.childNodes[0].value = thisData.Boosters[i].hw.ARPin;
 		var e = document.getElementById(thisTable.id + "_" + i.toString() + "_" + "6");
 		e.childNodes[0].innerHTML = thisData.Boosters[i].hw.SCCurrent > 0 ? thisData.Boosters[i].hw.SCCurrent.toString() : "Click \"Measure\"";
-		var e = document.getElementById(thisTable.id + "_" + i.toString() + "_" + "7");
-		if (thisData.Boosters[i].hw.Vals[0] != undefined)
-			e.childNodes[0].innerHTML = thisData.Boosters[i].hw.Vals[0] >= 0 ? thisData.Boosters[i].hw.Vals[0].toString() : "n/a";
-		var e = document.getElementById(thisTable.id + "_" + i.toString() + "_" + "8");
-		if (thisData.Boosters[i].hw.Vals[1] != undefined)
-			e.childNodes[0].innerHTML = thisData.Boosters[i].hw.Vals[1] >= 0 ? thisData.Boosters[i].hw.Vals[1].toString() : "n/a";
-		var e = document.getElementById(thisTable.id + "_" + i.toString() + "_" + "9");
-		if (thisData.Boosters[i].hw.Vals[2] != undefined)
-			e.childNodes[0].innerHTML = thisData.Boosters[i].hw.Vals[2] >= 0 ? thisData.Boosters[i].hw.Vals[2].toString() : "n/a";
-		var e = document.getElementById(thisTable.id + "_" + i.toString() + "_" + "10");
-		if (thisData.Boosters[i].hw.Vals[3] != undefined)
-			e.childNodes[0].innerHTML = thisData.Boosters[i].hw.Vals[3] >= 0 ? thisData.Boosters[i].hw.Vals[3].toString() : "n/a";
 
 	}
 
@@ -1370,12 +1344,16 @@ function loadNodeDataFields(jsonData)
 	{
 		case 1:; //DCC
 		case 2:  //DCC MQTT
+//		  updateActOptions(0, "bstON", 0, 2);
+//		  updateActOptions(0, "bstOFF", 0, 2);
 		  updateActOptions("bstON", 0, 5);
 		  updateActOptions("bstOFF", 1, 5);
 		break;
 		case 4:; //Loconet interface
 		case 5:; //Loconet TCP
 		case 6:  //Loconet MQTT
+//		  updateActOptions(1, "bstON", 0, 2);
+//		  updateActOptions(1, "bstOFF", 0, 2);
 		  updateActOptions("bstON", 0, 5);
 		  updateActOptions("bstOFF", 1, 5);
 		break;
@@ -1384,18 +1362,13 @@ function loadNodeDataFields(jsonData)
 
 function requestAllData()
 {
-//	console.log("Request Data from ");
-//	console.log(DeviceData.lnAddress);
 	if (DeviceData.lnAddress != 0)
 	{
 		sendSVCommand(0x02,0x00FF,[0,0,0,0]); //request all device config data)
 		sendSVCommand(0x02,0xFFFF,[0,0,0,0]); //request all boosterconfig data)
 	}
 	else
-	{
 		setTimeout(requestAllData, 500);
-//		console.log("Timeout");
-	}
 }
 
 function loadSettings(sender)
@@ -1430,7 +1403,6 @@ function processConfigDataInput(jsonData)
 
 function setActuator(modNr, actPos, actType, actAddr, actState)
 {
-	return;
 //	console.log(modNr, actPos, actType, actAddr, actState);
 	if (modNr >= 0)
 	{
@@ -1451,7 +1423,7 @@ function setActuator(modNr, actPos, actType, actAddr, actState)
 
 function processConfigDataBooster(jsonData)
 {
-//	console.log(jsonData);
+	console.log(jsonData);
 	var modNr = (jsonData.Prm.Addr >> 8) - 1;
 	var memLoc = jsonData.Prm.Addr & 0x00FF;
 	switch (jsonData.Prm.Opc)
@@ -1462,7 +1434,7 @@ function processConfigDataBooster(jsonData)
 			{
 				case 0x00: //Pins, Sensor rate
 //					console.log(jsonData);
-//					console.log(Boosters[modNr]);
+//					console.log(DeviceData.Boosters[modNr]);
 					DeviceData.Boosters[modNr].hw.PwrPin = jsonData.Prm.Vals[0] >> 4;
 					DeviceData.Boosters[modNr].hw.AnalogPin = jsonData.Prm.Vals[0] & 0x0F;
 					DeviceData.Boosters[modNr].hw.ARPin = jsonData.Prm.Vals[1] & 0x0F;
@@ -1513,42 +1485,6 @@ function processConfigDataBooster(jsonData)
 					loadConfigBoosterTable(BoosterTable, DeviceData.Boosters);
 //					console.log(DeviceData.Boosters[modNr].hw.SCCurrent);
 					break;
-/* see below
-				case 0x28: //Short Circuit measued values report
-//					console.log(jsonData.Prm.Vals);
-					for (var i = 0; i < 4; i++)
-						DeviceData.Boosters[modNr].hw.Vals[i] = jsonData.Prm.Vals[i] * DeviceData.Boosters[modNr].hw.SensorFactor;
-					DeviceData.Boosters[modNr].hw.SCCurrent = DeviceData.Boosters[modNr].hw.Vals[3];
-					loadHWTable(hwTable, DeviceData, false);
-					loadConfigBoosterTable(BoosterTable, DeviceData.Boosters);
-					break;
-*/
-			}
-		}
-		break;
-	}
-	setPanelVisibility();
-}
-
-function processWordDataInput(jsonData)
-{
-//	console.log(jsonData);
-	var modNr = (jsonData.Prm.Addr >> 8) - 1;
-	var memLoc = jsonData.Prm.Addr & 0x00FF;
-	switch (jsonData.Prm.Opc)
-	{
-		case 0x46: //Report 4 bytes of data
-		{
-			switch (memLoc)
-			{
-				case 0x28: //Short Circuit measued values report
-//					console.log(jsonData.Prm.Vals);
-					for (var i = 0; i < 4; i++)
-						DeviceData.Boosters[modNr].hw.Vals[i] = jsonData.Prm.Vals[i] * DeviceData.Boosters[modNr].hw.SensorFactor / 100;
-					DeviceData.Boosters[modNr].hw.SCCurrent = jsonData.Prm.Vals[3] * DeviceData.Boosters[modNr].hw.SensorFactor / 100;
-					loadHWTable(hwTable, DeviceData, false);
-					loadConfigBoosterTable(BoosterTable, DeviceData.Boosters);
-					break;
 			}
 		}
 		break;
@@ -1558,7 +1494,7 @@ function processWordDataInput(jsonData)
 
 function processConfigDataDevice(jsonData)
 {
-//	console.log(jsonData);
+	console.log(jsonData);
 	switch (jsonData.Prm.Opc)
 	{
 		case 0x42: //Report 1 byte of data
@@ -1582,7 +1518,6 @@ function processConfigDataDevice(jsonData)
 				case 0: //#of modules, LN Mode, Address
 					DeviceData.LNMode = jsonData.Prm.Vals[1];
 					DeviceData.lnAddress = (jsonData.Prm.Vals[2] << 8) + jsonData.Prm.Vals[3];
-//					console.log(jsonData.Prm.Vals[0]);
 					setDropdownValue("numMods", jsonData.Prm.Vals[0]);
 					document.getElementById("NumBooster").innerHTML = jsonData.Prm.Vals[0].toString();
 //					cbUseLN.checked = DeviceData.LNMode;

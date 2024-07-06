@@ -127,16 +127,23 @@ async function readLoop() {
 				{
 					try
 					{
+//						console.log(cmdBuffer);
 						var cmdData = JSON.parse(cmdBuffer);
-						if (cmdData.Cmd == "SVR")
-							processConfigDataInput(cmdData);
-						if (cmdData.Cmd == "DCCAmp")
-							processTrackDataInput(cmdData);
 					}
 					catch(err)
 					{
+//						console.log(cmdBuffer);
 						console.log(err.message);
 					}
+						if (cmdData.Cmd != undefined)
+						{
+							if (cmdData.Cmd.indexOf("SVR") >= 0)
+								processConfigDataInput(cmdData);
+							if (cmdData.Cmd.indexOf("SVW") >= 0)
+								processWordDataInput(cmdData);
+							if (cmdData.Cmd == "DCCAmp")
+								processTrackDataInput(cmdData);
+						}
 					cmdBuffer = "";
 				}
 			}
@@ -165,7 +172,9 @@ function writeToStream(...lines) {
       }
       const packet = `${line}\n`;
       stream.write(packet)
-//      console.log(packet)
+//     console.log(packet);
+//     console.log(packet.length);
+      
   });
   stream.releaseLock();
 }
@@ -292,8 +301,9 @@ async function toggleServer(btn) {
     // If already connected, disconnect
     if (port) {
         await disconnectServer();
-        btn.attr('aria-state','Disconnected');
-        btn.html('<span class="con-ind"></span>Connect DCC++ EX'); //<span id="con-ind"></span>Connect DCC++ EX
+//        btn.attr('aria-state','Disconnected');
+//        btn.html('<span class="con-ind"></span>Connect SilverHat'); //<span id="con-ind"></span>Connect DCC++ EX
+		btn.innerHTML = "Connect SilverHat";
         return;
     }
 
@@ -301,8 +311,10 @@ async function toggleServer(btn) {
     success = await connectServer();
     // Checks if the port was opened successfully
     if (success) {
-        btn.attr('aria-state','Connected');
-        btn.html('<span class="con-ind connected"></span>Disconnect DCC++ EX');
+        setTimeout(loadSettings, 5000, 0);
+//        btn.attr('aria-state','Connected');
+//        btn.html('<span class="con-ind connected"></span>Disconnect SilverHat');
+		btn.innerHTML = "Disconnect SilverHat";
     } 
 //    else {
 //        selectMethod.disabled = false;

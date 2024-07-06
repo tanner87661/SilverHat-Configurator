@@ -2,7 +2,7 @@ function constructFooterContent(footerTab)
 {
 	var tempObj;
 	tempObj = createEmptyDiv(footerTab, "div", "tile-1_4", "footerstatsdiv1");
-	createButton(tempObj, "btn-default btn", "Connect", "button-connect", "toggleServer(this)");
+	createButton(tempObj, "btn-default btn", "Connect SilverHat", "button-connect", "toggleServer(this)");
 
 /*
 		createDispText(tempObj, "", "Date / Time:", "n/a", "sysdatetime");
